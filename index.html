@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐蔽小说阅读器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(10px);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            border-radius: 10px;
+        }
+
+        /* 标题栏 */
+        .titlebar {
+            height: 40px;
+            background: rgba(50, 50, 50, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            cursor: move;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .titlebar h1 {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .window-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        .window-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .window-btn.close:hover {
+            background: #e74c3c;
+        }
+
+        /* 控制面板 */
+        .controls {
+            padding: 15px;
+            background: rgba(40, 40, 40, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            color: #aaa;
+            min-width: 80px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4a9eff;
+            cursor: pointer;
+        }
+
+        .opacity-value {
+            font-size: 12px;
+            color: #4a9eff;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .btn {
+            padding: 6px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: rgba(74, 158, 255, 0.3);
+        }
+
+        .btn.active {
+            background: #4a9eff;
+            color: white;
+        }
+
+        /* 小说内容区 */
+        .content {
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 180px);
+        }
+
+        .content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .chapter-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .text-content {
+            font-size: 16px;
+            line-height: 2;
+            text-align: justify;
+            color: #d0d0d0;
+        }
+
+        .text-content p {
+            margin-bottom: 15px;
+            text-indent: 2em;
+        }
+
+        /* 底部导航 */
+        .nav {
+            padding: 15px;
+            background: rgba(40, 40, 40, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .nav-btn {
+            padding: 8px 20px;
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(74, 158, 255, 0.3);
+        }
+
+        .chapter-info {
+            font-size: 12px;
+            color: #888;
+        }
+
+        /* 隐藏按钮 */
+        .hide-btn {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .hide-btn:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        /* 快捷键提示 */
+        .shortcut-hint {
+            font-size: 11px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="titlebar">
+        <h1>📖 隐蔽小说阅读器</h1>
+        <div class="window-controls">
+            <button class="window-btn" onclick="minimizeWindow()">−</button>
+            <button class="window-btn" onclick="hideToTray()">◻</button>
+            <button class="window-btn close" onclick="closeApp()">×</button>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>窗口透明度</label>
+            <input type="range" id="opacity" min="30" max="100" value="85" oninput="changeOpacity(this.value)">
+            <span class="opacity-value" id="opacityValue">85%</span>
+        </div>
+        <div class="control-group">
+            <label>功能选项</label>
+            <button class="btn active" id="topBtn" onclick="toggleTop()">置顶</button>
+            <button class="btn" onclick="loadSample()">加载示例</button>
+        </div>
+    </div>
+
+    <div class="content" id="content">
+        <div class="chapter-title" id="chapterTitle">欢迎使用隐蔽小说阅读器</div>
+        <div class="text-content" id="textContent">
+            <p>这是一个隐蔽的小说阅读器，可以在工作时偷偷看小说。</p>
+            <p>功能特点：</p>
+            <p>✅ 可调节窗口透明度，让窗口看起来不那么显眼</p>
+            <p>✅ 点击关闭按钮可以隐藏到系统托盘，不会在任务栏显示</p>
+            <p>✅ 窗口可以置顶显示，方便边工作边看</p>
+            <p>✅ 支持上下章节切换</p>
+            <p>✅ 无边框设计，界面简洁美观</p>
+            <p>使用方法：</p>
+            <p>1. 使用滑动条调节窗口透明度</p>
+            <p>2. 点击"置顶"按钮可以让窗口始终在最上层</p>
+            <p>3. 点击窗口控制栏的"◻"按钮可以隐藏到托盘</p>
+            <p>4. 在托盘区域点击图标可以重新显示窗口</p>
+            <p>5. 右键托盘图标可以退出程序</p>
+            <p>提示：你可以复制小说内容粘贴到这里，或者修改 index.html 文件中的小说内容。</p>
+        </div>
+    </div>
+
+    <div class="nav">
+        <button class="nav-btn" onclick="prevChapter()">上一章</button>
+        <span class="chapter-info">快捷键：Alt + H 隐藏 | Alt + S 显示</span>
+        <button class="nav-btn" onclick="nextChapter()">下一章</button>
+    </div>
+
+    <button class="hide-btn" onclick="hideToTray()">🙈 快速隐藏</button>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        let currentOpacity = 85;
+        let isTop = true;
+        let currentChapter = 0;
+
+        // 示例章节数据
+        const chapters = [
+            {
+                title: "第一章 初遇",
+                content: `这是一个示例小说的第一章。
+                
+春天的午后，阳光透过窗户洒在书桌上，空气中弥漫着淡淡的花香。
+                
+李明刚刚结束了上午的工作，正准备去楼下的小店买杯咖啡。推开办公室的门，一阵微风拂面而来，带着春天的气息。
+                
+电梯缓缓下降，叮的一声，门打开了。他正要走出去，却看见一个女孩从电梯外走了进来。女孩长发如瀑，眼神清澈如水，穿着简单的白色连衣裙，却美得让人移不开视线。
+                
+"不好意思。"女孩轻声说道，声音如银铃般清脆。
+                
+李明愣了一下，才意识到自己挡住了路，连忙退到一旁。"没关系。"
+                
+两人擦肩而过，李明闻到了女孩身上淡淡的茉莉花香。那一刻，他的心跳不知为何快了几分。`
+            },
+            {
+                title: "第二章 相识",
+                content: `李明回到办公室，心情久久不能平静。
+                
+那个女孩的身影在他脑海中挥之不去。他想，也许这就是传说中的心动吧。
+                
+下午，公司来了一位新同事。当经理带着新人走进会议室时，李明惊讶地瞪大了眼睛——竟然是电梯里遇到的那个女孩！
+                
+"大家认识一下，这是新来的设计师，叫林雨晴。"经理介绍道。
+                
+林雨晴微笑着向大家点头，目光在扫过李明时，停留了片刻，似乎也认出了他。
+                
+散会时，李明鼓起勇气走上前去。"你好，我叫李明，是前端开发组的。"
+                
+"你好，我是林雨晴。"女孩的微笑如春风般温暖。`
+            },
+            {
+                title: "第三章 相知",
+                content: `从那天起，李明和林雨晴的交集多了起来。
+                
+因为工作的关系，他们经常需要一起讨论项目。渐渐地，李明发现林雨晴不仅长得漂亮，而且才华横溢，工作认真负责。
+                
+而林雨晴也发现，李明虽然平时话不多，但做事踏实，技术精湛，是一个值得信赖的伙伴。
+                
+一个雨夜，两人加班到很晚。窗外雷声隆隆，雨点敲打着玻璃。
+                
+"这么晚了，我送你回家吧。"李明鼓起勇气说道。
+                
+林雨晴犹豫了一下，点了点头。"谢谢。"
+                
+撑着伞走在雨中，两人的距离似乎近了很多。`
+            }
+        ];
+
+        // 切换透明度
+        function changeOpacity(value) {
+            currentOpacity = value;
+            document.getElementById('opacityValue').textContent = value + '%';
+            document.body.style.background = `rgba(30, 30, 30, ${value / 100})`;
+        }
+
+        // 切换置顶
+        function toggleTop() {
+            isTop = !isTop;
+            const btn = document.getElementById('topBtn');
+            if (isTop) {
+                btn.classList.add('active');
+                btn.textContent = '置顶';
+            } else {
+                btn.classList.remove('active');
+                btn.textContent = '取消置顶';
+            }
+            // 注意：这需要在主进程中实现
+        }
+
+        // 最小化窗口
+        function minimizeWindow() {
+            ipcRenderer.send('minimize-window');
+        }
+
+        // 隐藏到托盘
+        function hideToTray() {
+            ipcRenderer.send('hide-window');
+        }
+
+        // 关闭应用
+        function closeApp() {
+            ipcRenderer.send('quit-app');
+        }
+
+        // 上一章
+        function prevChapter() {
+            if (currentChapter > 0) {
+                currentChapter--;
+                loadChapter(currentChapter);
+            } else {
+                alert('已经是第一章了');
+            }
+        }
+
+        // 下一章
+        function nextChapter() {
+            if (currentChapter < chapters.length - 1) {
+                currentChapter++;
+                loadChapter(currentChapter);
+            } else {
+                alert('已经是最后一章了');
+            }
+        }
+
+        // 加载章节
+        function loadChapter(index) {
+            const chapter = chapters[index];
+            document.getElementById('chapterTitle').textContent = chapter.title;
+            document.getElementById('textContent').innerHTML = chapter.content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
+        }
+
+        // 加载示例
+        function loadSample() {
+            currentChapter = 0;
+            loadChapter(0);
+        }
+
+        // 快捷键监听
+        document.addEventListener('keydown', (e) => {
+            if (e.altKey && e.key === 'h') {
+                e.preventDefault();
+                hideToTray();
+            }
+            if (e.altKey && e.key === 's') {
+                e.preventDefault();
+                // 显示窗口（需要在主进程中实现）
+            }
+        });
+
+        // 初始化
+        window.onload = function() {
+            // 设置初始透明度
+            document.body.style.background = `rgba(30, 30, 30, ${currentOpacity / 100})`;
+        };
+    </script>
+</body>
+</html>
