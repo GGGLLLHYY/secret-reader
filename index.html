@@ -660,7 +660,15 @@
 
         // 导入书源
         function importSource() {
-            ipcRenderer.send('import-book-source');
+            console.log('导入书源按钮被点击');
+            showStatus('正在打开文件选择...', 'success');
+            try {
+                ipcRenderer.send('import-book-source');
+                console.log('IPC 消息已发送');
+            } catch (error) {
+                console.error('发送 IPC 消息失败:', error);
+                showStatus('导入失败: ' + error.message, 'error');
+            }
         }
 
         // 接收导入的书源
