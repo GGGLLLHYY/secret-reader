@@ -25,7 +25,7 @@ jobs:
         npm install -g electron-builder
 
     - name: Build Windows executable
-      run: electron-builder --win --x64
+      run: electron-builder --win --x64 --publish never
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v4
