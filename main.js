@@ -155,6 +155,7 @@ ipcMain.on('open-file-dialog', async () => {
 // 导入书源
 ipcMain.on('import-book-source', async (event) => {
   try {
+    console.log('========== 导入书源 ==========');
     console.log('收到导入书源请求');
 
     // 打开文件选择对话框
@@ -189,6 +190,21 @@ ipcMain.on('import-book-source', async (event) => {
       bookSources = sources;
 
       console.log('成功解析书源,数量:', sources.length);
+
+      // 打印第一个书源的完整结构用于调试
+      if (sources.length > 0) {
+        console.log('========== 第一个书源结构 ==========');
+        console.log('书源名称:', sources[0].bookSourceName);
+        console.log('所有键:', Object.keys(sources[0]));
+        console.log('是否有 searchUrl:', !!sources[0].searchUrl);
+        console.log('是否有 ruleSearch:', !!sources[0].ruleSearch);
+        if (sources[0].ruleSearch) {
+          console.log('ruleSearch 的键:', Object.keys(sources[0].ruleSearch));
+          console.log('ruleSearch.searchUrl:', sources[0].ruleSearch.searchUrl);
+        }
+        console.log('=========================================');
+      }
+
       mainWindow.webContents.send('book-source-imported', { sources });
     } catch (error) {
       console.error('解析书源失败:', error);
@@ -200,40 +216,46 @@ ipcMain.on('import-book-source', async (event) => {
   }
 });
 
-// 搜索小说 - 搜索所有书源
+// 搜索小说 - 搜索所有书源(并行优化)
 ipcMain.on('search-books', async (event, { keyword }) => {
   try {
-    console.log('开始搜索所有书源,关键词:', keyword);
+    console.log(`开始搜索 ${bookSources.length} 个书源,关键词:`, keyword);
 
-    const allResults = [];
-    const errors = [];
-
-    // 搜索每个书源
-    for (let i = 0; i < bookSources.length; i++) {
-      const source = bookSources[i];
+    // 并行搜索所有书源
+    const searchPromises = bookSources.map(async (source, index) => {
       try {
-        console.log(`正在搜索书源 ${i + 1}/${bookSources.length}: ${source.bookSourceName}`);
-        const results = await searchBooks(source, keyword);
+        const results = await Promise.race([
+          searchBooks(source, keyword),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('请求超时')), 8000)
+          )
+        ]);
 
         // 为每个结果添加书源信息
-        const resultsWithSource = results.map(book => ({
+        return results.map(book => ({
           ...book,
           sourceName: source.bookSourceName,
-          sourceIndex: i
+          sourceIndex: index
         }));
-
-        allResults.push(...resultsWithSource);
-        console.log(`书源 ${source.bookSourceName} 找到 ${results.length} 本`);
       } catch (error) {
-        console.error(`书源 ${source.bookSourceName} 搜索失败:`, error.message);
-        errors.push(`${source.bookSourceName}: ${error.message}`);
+        // 只在严重错误时记录
+        if (error.message !== '书源没有配置搜索URL' &&
+            error.message !== '书源使用 JS 生成 URL,暂不支持' &&
+            error.message !== '书源返回了HTML而不是JSON') {
+          console.error(`${source.bookSourceName}: ${error.message}`);
+        }
+        return [];
       }
-    }
+    });
+
+    // 等待所有搜索完成
+    const allResultsArray = await Promise.all(searchPromises);
+    const allResults = allResultsArray.flat();
 
     console.log(`搜索完成,共找到 ${allResults.length} 本小说`);
     mainWindow.webContents.send('search-results', {
       results: allResults,
-      errors: errors.length > 0 ? errors : null
+      errors: null
     });
   } catch (error) {
     console.error('搜索失败:', error);
@@ -403,73 +425,61 @@ function parseJsonPath(obj, path) {
   return current;
 }
 
-// 搜索小说
+// 搜索小说(优化版)
 async function searchBooks(source, keyword) {
   try {
-    console.log('开始搜索,书源:', source.bookSourceName);
-    console.log('搜索关键词:', keyword);
-
-    // 构建搜索URL - 兼容两种格式
+    // 构建搜索URL - 兼容多种格式
     let searchUrl;
     if (source.searchUrl) {
-      // searchUrl 在 ruleSearch 外面
       searchUrl = source.searchUrl;
     } else if (source.ruleSearch && source.ruleSearch.searchUrl) {
-      // searchUrl 在 ruleSearch 里面
       searchUrl = source.ruleSearch.searchUrl;
     } else {
       throw new Error('书源没有配置搜索URL');
     }
 
-    // 检查是否使用 JS 生成 URL (以 @js: 或 <js> 开头)
-    if (searchUrl.startsWith('@js:') || searchUrl.startsWith('<js>')) {
+    // 检查是否使用 JS 生成 URL
+    if (searchUrl && (searchUrl.startsWith('@js:') || searchUrl.startsWith('<js>'))) {
       throw new Error('书源使用 JS 生成 URL,暂不支持');
     }
 
     // 替换 URL 模板
     searchUrl = replaceUrlTemplate(searchUrl, keyword);
-    console.log('搜索URL:', searchUrl);
 
     const data = await httpGet(searchUrl);
-    console.log('收到响应数据,长度:', data.length);
 
     // 检查返回的是HTML还是JSON
     if (data.trim().startsWith('<')) {
-      throw new Error('书源返回了HTML而不是JSON,书源格式可能不支持');
+      throw new Error('书源返回了HTML而不是JSON');
     }
 
-    let json;
-    try {
-      json = JSON.parse(data);
-      console.log('解析JSON成功');
-    } catch (error) {
-      throw new Error('无法解析JSON数据,数据格式错误');
-    }
+    const json = JSON.parse(data);
 
     // 获取书单列表
-    const bookListPath = source.ruleSearch.bookList;
-    console.log('书单路径:', bookListPath);
+    if (!source.ruleSearch || !source.ruleSearch.bookList) {
+      throw new Error('书源没有配置 bookList');
+    }
 
+    const bookListPath = source.ruleSearch.bookList;
     const results = parseJsonPath(json, bookListPath);
-    console.log('解析结果类型:', typeof results, '是否为数组:', Array.isArray(results));
 
     if (!Array.isArray(results)) {
-      throw new Error(`搜索结果格式错误: 期望数组,实际得到 ${typeof results}`);
+      throw new Error(`搜索结果格式错误`);
     }
 
     const books = [];
+    const lowerKeyword = keyword.toLowerCase();
+
     for (const item of results) {
       if (!item) continue;
 
-      // 解析书籍信息
       const name = parseJsonPath(item, source.ruleSearch.name) || item.book_name || item.name;
       const author = parseJsonPath(item, source.ruleSearch.author) || item.author;
       const intro = parseJsonPath(item, source.ruleSearch.intro) || item.abstract || item.introduction;
       const kind = parseJsonPath(item, source.ruleSearch.kind) || item.category;
       const bookId = parseJsonPath(item, '$.book_id') || item.book_id;
 
-      // 模糊匹配:书名包含关键词
-      if (name && name.toLowerCase().includes(keyword.toLowerCase())) {
+      if (name && name.toLowerCase().includes(lowerKeyword)) {
         books.push({
           name,
           author,
@@ -484,11 +494,9 @@ async function searchBooks(source, keyword) {
       }
     }
 
-    console.log('搜索完成,找到书籍数量:', books.length);
     return books;
   } catch (error) {
-    console.error('搜索失败:', error);
-    throw error;  // 直接抛出错误,让调用方处理
+    throw error;
   }
 }
 
