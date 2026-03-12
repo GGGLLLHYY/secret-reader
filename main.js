@@ -409,13 +409,25 @@ async function searchBooks(source, keyword) {
     console.log('开始搜索,书源:', source.bookSourceName);
     console.log('搜索关键词:', keyword);
 
-    // 构建搜索URL
+    // 构建搜索URL - 兼容两种格式
     let searchUrl;
-    if (source.ruleSearch && source.ruleSearch.searchUrl) {
-      searchUrl = replaceUrlTemplate(source.ruleSearch.searchUrl, keyword);
+    if (source.searchUrl) {
+      // searchUrl 在 ruleSearch 外面
+      searchUrl = source.searchUrl;
+    } else if (source.ruleSearch && source.ruleSearch.searchUrl) {
+      // searchUrl 在 ruleSearch 里面
+      searchUrl = source.ruleSearch.searchUrl;
     } else {
       throw new Error('书源没有配置搜索URL');
     }
+
+    // 检查是否使用 JS 生成 URL (以 @js: 或 <js> 开头)
+    if (searchUrl.startsWith('@js:') || searchUrl.startsWith('<js>')) {
+      throw new Error('书源使用 JS 生成 URL,暂不支持');
+    }
+
+    // 替换 URL 模板
+    searchUrl = replaceUrlTemplate(searchUrl, keyword);
     console.log('搜索URL:', searchUrl);
 
     const data = await httpGet(searchUrl);

@@ -739,10 +739,14 @@
             // 显示错误信息
             if (errors && errors.length > 0) {
                 const errorsDiv = document.getElementById('searchErrors');
+                // 只显示前5个错误
+                const displayErrors = errors.slice(0, 5);
+                const moreErrors = errors.length > 5 ? `<p style="color: #e74c3c; margin: 5px 0 0 0; font-size: 11px;">...还有 ${errors.length - 5} 个书源失败</p>` : '';
                 errorsDiv.innerHTML = `
                     <div style="background: rgba(231, 76, 60, 0.1); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                        <p style="color: #e74c3c; margin: 0; font-size: 12px;">以下书源搜索失败:</p>
-                        ${errors.map(e => `<p style="color: #e74c3c; margin: 5px 0 0 0; font-size: 11px;">• ${e}</p>`).join('')}
+                        <p style="color: #e74c3c; margin: 0; font-size: 12px;">以下书源搜索失败(已跳过):</p>
+                        ${displayErrors.map(e => `<p style="color: #e74c3c; margin: 5px 0 0 0; font-size: 11px;">• ${e}</p>`).join('')}
+                        ${moreErrors}
                     </div>
                 `;
             }
