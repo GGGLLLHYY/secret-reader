@@ -51,9 +51,9 @@ function createWindow() {
     height: 600,
     frame: false,          // 无边框
     transparent: true,     // 透明窗口
-    alwaysOnTop: true,     // 窗口置顶
+    alwaysOnTop: false,     // 不默认置顶
     resizable: true,       // 可调整大小
-    skipTaskbar: false,     // 在任务栏显示（可以改为true隐藏）
+    skipTaskbar: true,     // 不在任务栏显示
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
@@ -97,6 +97,10 @@ ipcMain.on('hide-window', () => {
 
 ipcMain.on('show-window', () => {
   mainWindow.show();
+});
+
+ipcMain.on('set-always-on-top', (event, alwaysOnTop) => {
+  mainWindow.setAlwaysOnTop(alwaysOnTop);
 });
 
 ipcMain.on('register-shortcut', (event, { hideKey, showKey }) => {
