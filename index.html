@@ -29,19 +29,21 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 15px;
-            cursor: move;
             border-radius: 10px 10px 0 0;
+            -webkit-app-region: drag; /* 允许拖动窗口 */
         }
 
         .titlebar h1 {
             font-size: 14px;
             font-weight: 500;
             color: #fff;
+            -webkit-app-region: no-drag; /* 标题不参与拖动 */
         }
 
         .window-controls {
             display: flex;
             gap: 10px;
+            -webkit-app-region: no-drag; /* 按钮不参与拖动 */
         }
 
         .window-btn {
@@ -93,7 +95,7 @@
             border-radius: 3px;
             background: rgba(255, 255, 255, 0.2);
             outline: none;
-            -webkit-appearance: none;
+            -webkit-apppearance: none;
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -105,7 +107,7 @@
             cursor: pointer;
         }
 
-        .opacity-value {
+        .value-display {
             font-size: 12px;
             color: #4a9eff;
             min-width: 40px;
@@ -132,11 +134,26 @@
             color: white;
         }
 
+        input[type="text"] {
+            padding: 5px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background: rgba(30, 30, 30, 0.8);
+            color: #e0e0e0;
+            font-size: 12px;
+            width: 150px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4a9eff;
+        }
+
         /* 小说内容区 */
         .content {
             padding: 20px;
             overflow-y: auto;
-            height: calc(100vh - 180px);
+            height: calc(100vh - 260px);
         }
 
         .content::-webkit-scrollbar {
@@ -197,6 +214,11 @@
             background: rgba(74, 158, 255, 0.3);
         }
 
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .chapter-info {
             font-size: 12px;
             color: #888;
@@ -215,18 +237,50 @@
             cursor: pointer;
             font-size: 12px;
             z-index: 1000;
+            -webkit-app-region: no-drag;
         }
 
         .hide-btn:hover {
             background: rgba(231, 76, 60, 0.3);
         }
 
-        /* 快捷键提示 */
+        /* 状态提示 */
+        .status-message {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+            display: block;
+        }
+
+        .status-message.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #c0392b;
+            display: block;
+        }
+
         .shortcut-hint {
             font-size: 11px;
             color: #666;
             text-align: center;
             margin-top: 10px;
+        }
+
+        /* 快捷键说明 */
+        .shortcut-info {
+            font-size: 11px;
+            color: #888;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-left: 5px;
         }
     </style>
 </head>
@@ -235,8 +289,8 @@
         <h1>📖 隐蔽小说阅读器</h1>
         <div class="window-controls">
             <button class="window-btn" onclick="minimizeWindow()">−</button>
-            <button class="window-btn" onclick="hideToTray()">◻</button>
-            <button class="window-btn close" onclick="closeApp()">×</button>
+            <button class="window-btn" onclick="maximizeWindow()">□</button>
+            <button class="window-btn close" onclick="closeWindow()">×</button>
         </div>
     </div>
 
@@ -244,13 +298,34 @@
         <div class="control-group">
             <label>窗口透明度</label>
             <input type="range" id="opacity" min="30" max="100" value="85" oninput="changeOpacity(this.value)">
-            <span class="opacity-value" id="opacityValue">85%</span>
+            <span class="value-display" id="opacityValue">85%</span>
+        </div>
+        <div class="control-group">
+            <label>文字大小</label>
+            <input type="range" id="fontSize" min="12" max="32" value="16" oninput="changeFontSize(this.value)">
+            <span class="value-display" id="fontSizeValue">16px</span>
+        </div>
+        <div class="control-group">
+            <label>行间距</label>
+            <input type="range" id="lineHeight" min="15" max="35" value="20" oninput="changeLineHeight(this.value)">
+            <span class="value-display" id="lineHeightValue">20px</span>
         </div>
         <div class="control-group">
             <label>功能选项</label>
             <button class="btn active" id="topBtn" onclick="toggleTop()">置顶</button>
+            <button class="btn" onclick="openFile()">📄 打开TXT文件</button>
             <button class="btn" onclick="loadSample()">加载示例</button>
         </div>
+        <div class="control-group">
+            <label>隐藏快捷键</label>
+            <input type="text" id="hideShortcut" value="Alt+H" placeholder="如: Alt+H">
+            <button class="btn" onclick="registerShortcuts()">应用快捷键</button>
+        </div>
+        <div class="control-group">
+            <label>显示快捷键</label>
+            <input type="text" id="showShortcut" value="Alt+S" placeholder="如: Alt+S">
+        </div>
+        <div id="statusMessage" class="status-message"></div>
     </div>
 
     <div class="content" id="content">
@@ -261,22 +336,25 @@
             <p>✅ 可调节窗口透明度，让窗口看起来不那么显眼</p>
             <p>✅ 点击关闭按钮可以隐藏到系统托盘，不会在任务栏显示</p>
             <p>✅ 窗口可以置顶显示，方便边工作边看</p>
-            <p>✅ 支持上下章节切换</p>
-            <p>✅ 无边框设计，界面简洁美观</p>
+            <p>✅ 支持打开TXT文件，方便阅读本地小说</p>
+            <p>✅ 支持键盘翻页（↑ ↓ ← → PageUp PageDown）</p>
+            <p>✅ 可调节文字大小和行间距</p>
+            <p>✅ 可自定义快捷键</p>
             <p>使用方法：</p>
             <p>1. 使用滑动条调节窗口透明度</p>
             <p>2. 点击"置顶"按钮可以让窗口始终在最上层</p>
-            <p>3. 点击窗口控制栏的"◻"按钮可以隐藏到托盘</p>
+            <p>3. 点击窗口控制栏的"×"按钮可以隐藏到托盘</p>
             <p>4. 在托盘区域点击图标可以重新显示窗口</p>
             <p>5. 右键托盘图标可以退出程序</p>
-            <p>提示：你可以复制小说内容粘贴到这里，或者修改 index.html 文件中的小说内容。</p>
+            <p>6. 点击"打开TXT文件"选择本地小说文件</p>
+            <p>7. 用键盘方向键或PageUp/PageDown翻页</p>
         </div>
     </div>
 
     <div class="nav">
-        <button class="nav-btn" onclick="prevChapter()">上一章</button>
-        <span class="chapter-info">快捷键：Alt + H 隐藏 | Alt + S 显示</span>
-        <button class="nav-btn" onclick="nextChapter()">下一章</button>
+        <button class="nav-btn" onclick="scrollUp()">↑ 上翻页</button>
+        <div class="shortcut-info">快捷键：↑ ↓ ← → | PageUp PageDown | Space</div>
+        <button class="nav-btn" onclick="scrollDown()">下翻页 ↓</button>
     </div>
 
     <button class="hide-btn" onclick="hideToTray()">🙈 快速隐藏</button>
@@ -286,56 +364,57 @@
 
         let currentOpacity = 85;
         let isTop = true;
-        let currentChapter = 0;
+        let currentFontSize = 16;
+        let currentLineHeight = 20;
 
         // 示例章节数据
         const chapters = [
             {
                 title: "第一章 初遇",
                 content: `这是一个示例小说的第一章。
-                
+
 春天的午后，阳光透过窗户洒在书桌上，空气中弥漫着淡淡的花香。
-                
+
 李明刚刚结束了上午的工作，正准备去楼下的小店买杯咖啡。推开办公室的门，一阵微风拂面而来，带着春天的气息。
-                
+
 电梯缓缓下降，叮的一声，门打开了。他正要走出去，却看见一个女孩从电梯外走了进来。女孩长发如瀑，眼神清澈如水，穿着简单的白色连衣裙，却美得让人移不开视线。
-                
+
 "不好意思。"女孩轻声说道，声音如银铃般清脆。
-                
+
 李明愣了一下，才意识到自己挡住了路，连忙退到一旁。"没关系。"
-                
+
 两人擦肩而过，李明闻到了女孩身上淡淡的茉莉花香。那一刻，他的心跳不知为何快了几分。`
             },
             {
                 title: "第二章 相识",
                 content: `李明回到办公室，心情久久不能平静。
-                
+
 那个女孩的身影在他脑海中挥之不去。他想，也许这就是传说中的心动吧。
-                
+
 下午，公司来了一位新同事。当经理带着新人走进会议室时，李明惊讶地瞪大了眼睛——竟然是电梯里遇到的那个女孩！
-                
+
 "大家认识一下，这是新来的设计师，叫林雨晴。"经理介绍道。
-                
+
 林雨晴微笑着向大家点头，目光在扫过李明时，停留了片刻，似乎也认出了他。
-                
+
 散会时，李明鼓起勇气走上前去。"你好，我叫李明，是前端开发组的。"
-                
+
 "你好，我是林雨晴。"女孩的微笑如春风般温暖。`
             },
             {
                 title: "第三章 相知",
                 content: `从那天起，李明和林雨晴的交集多了起来。
-                
+
 因为工作的关系，他们经常需要一起讨论项目。渐渐地，李明发现林雨晴不仅长得漂亮，而且才华横溢，工作认真负责。
-                
+
 而林雨晴也发现，李明虽然平时话不多，但做事踏实，技术精湛，是一个值得信赖的伙伴。
-                
+
 一个雨夜，两人加班到很晚。窗外雷声隆隆，雨点敲打着玻璃。
-                
+
 "这么晚了，我送你回家吧。"李明鼓起勇气说道。
-                
+
 林雨晴犹豫了一下，点了点头。"谢谢。"
-                
+
 撑着伞走在雨中，两人的距离似乎近了很多。`
             }
         ];
@@ -347,6 +426,20 @@
             document.body.style.background = `rgba(30, 30, 30, ${value / 100})`;
         }
 
+        // 切换文字大小
+        function changeFontSize(value) {
+            currentFontSize = value;
+            document.getElementById('fontSizeValue').textContent = value + 'px';
+            document.getElementById('textContent').style.fontSize = value + 'px';
+        }
+
+        // 切换行间距
+        function changeLineHeight(value) {
+            currentLineHeight = value;
+            document.getElementById('lineHeightValue').textContent = value + 'px';
+            document.getElementById('textContent').style.lineHeight = (value / 10);
+        }
+
         // 切换置顶
         function toggleTop() {
             isTop = !isTop;
@@ -354,11 +447,12 @@
             if (isTop) {
                 btn.classList.add('active');
                 btn.textContent = '置顶';
+                ipcRenderer.send('set-always-on-top', true);
             } else {
                 btn.classList.remove('active');
                 btn.textContent = '取消置顶';
+                ipcRenderer.send('set-always-on-top', false);
             }
-            // 注意：这需要在主进程中实现
         }
 
         // 最小化窗口
@@ -366,65 +460,176 @@
             ipcRenderer.send('minimize-window');
         }
 
+        // 最大化/还原窗口
+        function maximizeWindow() {
+            ipcRenderer.send('maximize-window');
+        }
+
+        // 关闭窗口
+        function closeWindow() {
+            ipcRenderer.send('close-window');
+        }
+
         // 隐藏到托盘
         function hideToTray() {
             ipcRenderer.send('hide-window');
         }
 
-        // 关闭应用
-        function closeApp() {
-            ipcRenderer.send('quit-app');
+        // 显示窗口
+        function showWindow() {
+            ipcRenderer.send('show-window');
         }
 
-        // 上一章
-        function prevChapter() {
-            if (currentChapter > 0) {
-                currentChapter--;
-                loadChapter(currentChapter);
-            } else {
-                alert('已经是第一章了');
-            }
+        // 上翻页
+        function scrollUp() {
+            const content = document.getElementById('content');
+            content.scrollBy({
+                top: -300,
+                behavior: 'smooth'
+            });
         }
 
-        // 下一章
-        function nextChapter() {
-            if (currentChapter < chapters.length - 1) {
-                currentChapter++;
-                loadChapter(currentChapter);
-            } else {
-                alert('已经是最后一章了');
-            }
-        }
-
-        // 加载章节
-        function loadChapter(index) {
-            const chapter = chapters[index];
-            document.getElementById('chapterTitle').textContent = chapter.title;
-            document.getElementById('textContent').innerHTML = chapter.content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
+        // 下翻页
+        function scrollDown() {
+            const content = document.getElementById('content');
+            content.scrollBy({
+                top: 300,
+                behavior: 'smooth'
+            });
         }
 
         // 加载示例
         function loadSample() {
-            currentChapter = 0;
-            loadChapter(0);
+            document.getElementById('chapterTitle').textContent = chapters[0].title;
+            const content = chapters[0].content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
+            document.getElementById('textContent').innerHTML = content;
+            showStatus('示例已加载', 'success');
         }
 
-        // 快捷键监听
+        // 打开文件
+        function openFile() {
+            ipcRenderer.send('open-file-dialog');
+        }
+
+        // 接收文件内容
+        ipcRenderer.on('file-loaded', (event, { content, fileName }) => {
+            // 将文件内容按段落分割
+            const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
+
+            // 生成HTML
+            const html = paragraphs.map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
+
+            document.getElementById('chapterTitle').textContent = fileName;
+            document.getElementById('textContent').innerHTML = html;
+
+            // 滚动到顶部
+            document.getElementById('content').scrollTop = 0;
+
+            showStatus(`已加载: ${fileName}`, 'success');
+        });
+
+        // 接收文件错误
+        ipcRenderer.on('file-error', (event, { error }) => {
+            showStatus(`加载失败: ${error}`, 'error');
+        });
+
+        // 注册快捷键
+        function registerShortcuts() {
+            const hideKey = document.getElementById('hideShortcut').value.trim();
+            const showKey = document.getElementById('showShortcut').value.trim();
+
+            if (!hideKey || !showKey) {
+                showStatus('请填写快捷键', 'error');
+                return;
+            }
+
+            ipcRenderer.send('register-shortcut', { hideKey, showKey });
+        }
+
+        // 接收快捷键注册结果
+        ipcRenderer.on('shortcut-registered', (event, { success, error }) => {
+            if (success) {
+                showStatus('快捷键已设置成功！', 'success');
+            } else {
+                showStatus(`快捷键设置失败: ${error}`, 'error');
+            }
+        });
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const status = document.getElementById('statusMessage');
+            status.textContent = message;
+            status.className = `status-message ${type}`;
+
+            setTimeout(() => {
+                status.className = 'status-message';
+                status.textContent = '';
+            }, 3000);
+        }
+
+        // 键盘快捷键监听
         document.addEventListener('keydown', (e) => {
-            if (e.altKey && e.key === 'h') {
-                e.preventDefault();
-                hideToTray();
+            // 阻止某些默认行为
+            const content = document.getElementById('content');
+            const isAtTop = content.scrollTop === 0;
+            const isAtBottom = content.scrollHeight - content.scrollTop === content.clientHeight;
+
+            switch (e.key) {
+                case 'ArrowUp':
+                    if (isAtTop) {
+                        e.preventDefault();
+                        scrollUp();
+                    }
+                    break;
+                case 'ArrowDown':
+                    if (isAtBottom) {
+                        e.preventDefault();
+                        scrollDown();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    scrollUp();
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    scrollDown();
+                    break;
+                case 'PageUp':
+                    e.preventDefault();
+                    scrollUp();
+                    break;
+                case 'PageDown':
+                    e.preventDefault();
+                    scrollDown();
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    scrollDown();
+                    break;
             }
-            if (e.altKey && e.key === 's') {
-                e.preventDefault();
-                // 显示窗口（需要在主进程中实现）
-            }
+        });
+
+        // 鼠标滚轮支持（可选）
+        let scrollTimeout;
+        document.getElementById('content').addEventListener('wheel', (e) => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (e.deltaY > 0) {
+                    // 向下滚动
+                } else {
+                    // 向上滚动
+                }
+            }, 100);
         });
 
         // 初始化
         window.onload = function() {
             // 设置初始透明度
             document.body.style.background = `rgba(30, 30, 30, ${currentOpacity / 100})`;
+
+            // 注册默认快捷键
+            registerShortcuts();
         };
     </script>
 </body>
