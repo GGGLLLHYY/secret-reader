@@ -11,20 +11,19 @@
             box-sizing: border-box;
         }
 
-      body {
-    font-family: 'Microsoft YaHei', Arial, sans-serif;
-    background: rgba(30, 30, 30, 0.85);
-    backdrop-filter: blur(10px);
-    color: #e0e0e0;
-    overflow: hidden;
-    height: 100vh;
-    border-radius: 10px;
-    transition: background 0.3s, color 0.3s;
-    display: flex;
-    flex-direction: column;
-}
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: rgba(30, 30, 30, 0.85);
+            backdrop-filter: blur(10px);
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+            border-radius: 10px;
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* 标题栏 */
         .titlebar {
             height: 40px;
             background: rgba(50, 50, 50, 0.9);
@@ -33,7 +32,7 @@
             justify-content: space-between;
             padding: 0 15px;
             border-radius: 10px 10px 0 0;
-            -webkit-app-region: drag; /* 允许拖动窗口 */
+            -webkit-app-region: drag;
             transition: background 0.3s;
         }
 
@@ -41,14 +40,14 @@
             font-size: 14px;
             font-weight: 500;
             color: #fff;
-            -webkit-app-region: no-drag; /* 标题不参与拖动 */
+            -webkit-app-region: no-drag;
             transition: color 0.3s;
         }
 
         .window-controls {
             display: flex;
             gap: 10px;
-            -webkit-app-region: no-drag; /* 按钮不参与拖动 */
+            -webkit-app-region: no-drag;
         }
 
         .window-btn {
@@ -74,7 +73,6 @@
             background: #e74c3c;
         }
 
-        /* 设置面板 */
         .settings-panel {
             padding: 15px;
             background: rgba(40, 40, 40, 0.95);
@@ -173,13 +171,12 @@
             background: transparent;
         }
 
-        /* 小说内容区 */
-       .content {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-    min-height: 0;
-}
+        .content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
 
         .content::-webkit-scrollbar {
             width: 6px;
@@ -212,7 +209,61 @@
             text-indent: 2em;
         }
 
-        /* 底部导航 */
+        .search-results {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .book-item {
+            padding: 15px;
+            background: rgba(60, 60, 60, 0.6);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .book-item:hover {
+            background: rgba(80, 80, 80, 0.8);
+        }
+
+        .book-item h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #4a9eff;
+        }
+
+        .book-item .book-info {
+            font-size: 12px;
+            opacity: 0.7;
+            line-height: 1.6;
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .chapter-item {
+            padding: 10px 15px;
+            background: rgba(60, 60, 60, 0.5);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 13px;
+        }
+
+        .chapter-item:hover {
+            background: rgba(80, 80, 80, 0.7);
+        }
+
+        .chapter-item.active {
+            background: rgba(74, 158, 255, 0.3);
+            color: #4a9eff;
+        }
+
         .nav {
             padding: 15px;
             background: rgba(40, 40, 40, 0.95);
@@ -220,6 +271,7 @@
             justify-content: space-between;
             align-items: center;
             border-radius: 0 0 10px 10px;
+            gap: 10px;
         }
 
         .nav-btn {
@@ -231,6 +283,7 @@
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .nav-btn:hover {
@@ -242,7 +295,11 @@
             cursor: not-allowed;
         }
 
-        /* 设置按钮 */
+        .nav-btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
         .toggle-settings-btn {
             padding: 8px 15px;
             background: rgba(74, 158, 255, 0.2);
@@ -259,19 +316,6 @@
             background: rgba(74, 158, 255, 0.3);
         }
 
-        /* 快捷键说明 */
-        .shortcut-info {
-            font-size: 11px;
-            color: inherit;
-            opacity: 0.6;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 3px;
-            display: inline-block;
-            margin-left: 5px;
-        }
-
-        /* 状态提示 */
         .status-message {
             padding: 10px 15px;
             margin: 10px 0;
@@ -292,7 +336,6 @@
             display: block;
         }
 
-        /* 欢迎/空状态 */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -306,6 +349,45 @@
         .empty-state p {
             opacity: 0.7;
             line-height: 1.8;
+        }
+
+        .source-select {
+            padding: 5px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            background: rgba(30, 30, 30, 0.8);
+            color: inherit;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.7;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
         }
     </style>
 </head>
@@ -347,6 +429,7 @@
             <label>功能选项</label>
             <button class="btn" id="topBtn" onclick="toggleTop()">置顶</button>
             <button class="btn" onclick="openFile()">📄 打开TXT文件</button>
+            <button class="btn" onclick="importSource()">📥 导入书源</button>
             <button class="btn" onclick="loadSample()">加载示例</button>
         </div>
         <div class="control-group">
@@ -364,25 +447,32 @@
     <div class="content" id="content">
         <div class="empty-state">
             <h2>欢迎使用隐蔽小说阅读器</h2>
-            <p>点击"打开TXT文件"按钮选择小说文件，或点击"加载示例"查看示例内容。</p>
             <p>功能特点：</p>
+            <p>✅ 支持在线搜索小说（需导入书源）</p>
+            <p>✅ 支持换源阅读</p>
+            <p>✅ 支持缓存小说为TXT</p>
             <p>✅ 可调节窗口透明度、背景颜色、文字颜色</p>
             <p>✅ 点击关闭按钮可以隐藏到系统托盘</p>
             <p>✅ 不在任务栏显示，仅在托盘显示</p>
             <p>✅ 支持键盘翻页</p>
             <p>✅ 可自定义快捷键</p>
             <p>使用方法：</p>
-            <p>1. 点击下方"打开设置"展开设置面板</p>
-            <p>2. 调整透明度、颜色、文字大小等</p>
-            <p>3. 点击"打开TXT文件"选择小说</p>
-            <p>4. 设置会自动收起，开始阅读</p>
+            <p>1. 先导入书源文件（支持番阁格式）</p>
+            <p>2. 输入小说名称搜索</p>
+            <p>3. 点击小说查看章节列表</p>
+            <p>4. 点击章节开始阅读</p>
+            <p>5. 可随时换源或缓存为TXT</p>
         </div>
     </div>
 
     <div class="nav">
-        <button class="nav-btn" onclick="scrollUp()">↑ 上翻页</button>
+        <button class="nav-btn nav-btn-small" id="searchBtn" onclick="showSearch()">🔍 搜索</button>
+        <button class="nav-btn nav-btn-small" id="chaptersBtn" onclick="showChapters()" disabled>📑 目录</button>
+        <button class="nav-btn nav-btn-small" id="prevBtn" onclick="prevChapter()" disabled>◀ 上一章</button>
+        <button class="nav-btn nav-btn-small" id="nextBtn" onclick="nextChapter()" disabled>下一章 ▶</button>
+        <button class="nav-btn nav-btn-small" id="cacheBtn" onclick="cacheToTxt()" disabled>💾 缓存TXT</button>
+        <button class="nav-btn nav-btn-small" id="changeSourceBtn" onclick="changeSource()" disabled>🔄 换源</button>
         <button class="toggle-settings-btn" onclick="toggleSettings()">⚙️ 打开设置</button>
-        <button class="nav-btn" onclick="scrollDown()">下翻页 ↓</button>
     </div>
 
     <script>
@@ -393,9 +483,15 @@
         let currentFontSize = 16;
         let currentLineHeight = 20;
         let settingsVisible = true;
+        
+        let bookSources = [];
+        let currentSource = null;
+        let searchResults = [];
+        let currentBook = null;
+        let currentChapterIndex = -1;
+        let chapters = [];
 
-        // 示例章节数据
-        const chapters = [
+        const sampleChapters = [
             {
                 title: "第一章 初遇",
                 content: `这是一个示例小说的第一章。
@@ -446,7 +542,6 @@
             }
         ];
 
-        // 切换透明度
         function changeOpacity(value) {
             currentOpacity = value;
             document.getElementById('opacityValue').textContent = value + '%';
@@ -458,7 +553,6 @@
             document.body.style.background = `rgba(${bgColor.r}, ${bgColor.g}, ${bgColor.b}, ${currentOpacity / 100})`;
         }
 
-        // 切换文字大小
         function changeFontSize(value) {
             currentFontSize = value;
             document.getElementById('fontSizeValue').textContent = value + 'px';
@@ -468,7 +562,6 @@
             }
         }
 
-        // 切换行间距
         function changeLineHeight(value) {
             currentLineHeight = value;
             document.getElementById('lineHeightValue').textContent = value + 'px';
@@ -478,12 +571,10 @@
             }
         }
 
-        // 切换背景颜色
         function changeBgColor(value) {
             updateOpacity();
         }
 
-        // 切换文字颜色
         function changeTextColor(value) {
             document.body.style.color = value;
             const titlebar = document.querySelector('.titlebar h1');
@@ -502,7 +593,6 @@
             if (textContent) textContent.style.color = value;
         }
 
-        // 切换置顶
         function toggleTop() {
             isTop = !isTop;
             const btn = document.getElementById('topBtn');
@@ -517,7 +607,6 @@
             }
         }
 
-        // 切换设置面板显示/隐藏
         function toggleSettings() {
             settingsVisible = !settingsVisible;
             const panel = document.getElementById('settingsPanel');
@@ -532,22 +621,280 @@
             }
         }
 
-        // 最小化窗口
+        function importSource() {
+            ipcRenderer.send('import-book-source');
+        }
+
+        ipcRenderer.on('book-source-imported', (event, { sources, error }) => {
+            if (error) {
+                showStatus(`导入失败: ${error}`, 'error');
+                return;
+            }
+            
+            bookSources = sources;
+            showStatus(`成功导入 ${sources.length} 个书源`, 'success');
+            
+            if (sources.length > 0) {
+                currentSource = sources[0];
+            }
+        });
+
+        function showSearch() {
+            if (bookSources.length === 0) {
+                showStatus('请先导入书源', 'error');
+                return;
+            }
+
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = `
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="输入小说名称" 
+                           onkeypress="if(event.key==='Enter') performSearch()">
+                    <select id="sourceSelect" class="source-select" onchange="selectSource(this.value)">
+                        ${bookSources.map((s, i) => `<option value="${i}">${s.bookSourceName}</option>`).join('')}
+                    </select>
+                    <button class="btn" onclick="performSearch()">搜索</button>
+                </div>
+                <div id="searchResults" class="search-results"></div>
+            `;
+
+            if (settingsVisible) {
+                toggleSettings();
+            }
+
+            document.getElementById('searchInput').focus();
+        }
+
+        function selectSource(index) {
+            currentSource = bookSources[parseInt(index)];
+        }
+
+        function performSearch() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (!keyword) {
+                showStatus('请输入小说名称', 'error');
+                return;
+            }
+
+            if (!currentSource) {
+                showStatus('请选择书源', 'error');
+                return;
+            }
+
+            showStatus('搜索中...', 'success');
+            document.getElementById('searchResults').innerHTML = '<div class="loading">搜索中</div>';
+
+            ipcRenderer.send('search-books', {
+                source: currentSource,
+                keyword: keyword
+            });
+        }
+
+        ipcRenderer.on('search-results', (event, { results, error }) => {
+            if (error) {
+                showStatus(`搜索失败: ${error}`, 'error');
+                document.getElementById('searchResults').innerHTML = `<p style="color: #e74c3c;">${error}</p>`;
+                return;
+            }
+
+            searchResults = results;
+            displaySearchResults(results);
+        });
+
+        function displaySearchResults(results) {
+            const resultsDiv = document.getElementById('searchResults');
+
+            if (!results || results.length === 0) {
+                resultsDiv.innerHTML = '<p style="opacity: 0.7;">未找到相关小说</p>';
+                showStatus('未找到相关小说', 'error');
+                return;
+            }
+
+            resultsDiv.innerHTML = results.map((book, index) => `
+                <div class="book-item" onclick="selectBook(${index})">
+                    <h3>${book.name}</h3>
+                    <div class="book-info">
+                        <p>作者：${book.author || '未知'}</p>
+                        <p>${book.intro || '暂无简介'}</p>
+                        ${book.kind ? `<p>标签：${book.kind}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            showStatus(`找到 ${results.length} 本小说`, 'success');
+        }
+
+        function selectBook(index) {
+            currentBook = searchResults[index];
+            showStatus('获取章节中...', 'success');
+            
+            ipcRenderer.send('get-chapters', {
+                source: currentSource,
+                book: currentBook
+            });
+        }
+
+        ipcRenderer.on('chapters-loaded', (event, { chapters: chapterData, error }) => {
+            if (error) {
+                showStatus(`获取章节失败: ${error}`, 'error');
+                return;
+            }
+
+            chapters = chapterData;
+            showChapters();
+            showStatus(`共 ${chapters.length} 章`, 'success');
+        });
+
+        function showChapters() {
+            if (chapters.length === 0) {
+                showStatus('暂无章节', 'error');
+                return;
+            }
+
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = `
+                <div class="chapter-title">${currentBook.name} - 章节目录</div>
+                <div class="chapter-list">
+                    ${chapters.map((chapter, index) => `
+                        <div class="chapter-item ${index === currentChapterIndex ? 'active' : ''}" 
+                             onclick="loadChapter(${index})">
+                            ${chapter.title}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            enableNavigationButtons();
+            
+            if (settingsVisible) {
+                toggleSettings();
+            }
+        }
+
+        function loadChapter(index) {
+            if (index < 0 || index >= chapters.length) return;
+
+            currentChapterIndex = index;
+            const chapter = chapters[index];
+
+            showStatus('加载中...', 'success');
+
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = '<div class="loading">加载中</div>';
+
+            ipcRenderer.send('get-chapter-content', {
+                source: currentSource,
+                book: currentBook,
+                chapter: chapter
+            });
+
+            if (document.querySelector('.chapter-list')) {
+                showChapters();
+            }
+
+            enableNavigationButtons();
+        }
+
+        ipcRenderer.on('chapter-content-loaded', (event, { content, error }) => {
+            if (error) {
+                showStatus(`加载失败: ${error}`, 'error');
+                document.getElementById('content').innerHTML = `<p style="color: #e74c3c;">${error}</p>`;
+                return;
+            }
+
+            displayChapterContent(content);
+            showStatus(`已加载: ${chapters[currentChapterIndex].title}`, 'success');
+        });
+
+        function displayChapterContent(content) {
+            const contentDiv = document.getElementById('content');
+            
+            const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
+            const html = paragraphs.map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
+
+            contentDiv.innerHTML = `
+                <div class="chapter-title">${chapters[currentChapterIndex].title}</div>
+                <div class="text-content" id="textContent">
+                    ${html}
+                </div>
+            `;
+
+            contentDiv.scrollTop = 0;
+            applyStyles();
+        }
+
+        function prevChapter() {
+            if (currentChapterIndex > 0) {
+                loadChapter(currentChapterIndex - 1);
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapterIndex < chapters.length - 1) {
+                loadChapter(currentChapterIndex + 1);
+            }
+        }
+
+        function enableNavigationButtons() {
+            document.getElementById('chaptersBtn').disabled = false;
+            document.getElementById('prevBtn').disabled = false;
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('cacheBtn').disabled = false;
+            document.getElementById('changeSourceBtn').disabled = bookSources.length > 1;
+        }
+
+        function cacheToTxt() {
+            if (!currentBook || chapters.length === 0) {
+                showStatus('没有可缓存的小说', 'error');
+                return;
+            }
+
+            showStatus('缓存中...', 'success');
+            ipcRenderer.send('cache-book-to-txt', {
+                book: currentBook,
+                chapters: chapters
+            });
+        }
+
+        ipcRenderer.on('cache-completed', (event, { success, error, filePath }) => {
+            if (success) {
+                showStatus(`缓存成功: ${filePath}`, 'success');
+            } else {
+                showStatus(`缓存: ${error}`, 'success');
+            }
+        });
+
+        function changeSource() {
+            if (!currentBook) {
+                showStatus('请先选择小说', 'error');
+                return;
+            }
+
+            const currentIndex = bookSources.indexOf(currentSource);
+            const nextIndex = (currentIndex + 1) % bookSources.length;
+            currentSource = bookSources[nextIndex];
+
+            showStatus(`切换到: ${currentSource.bookSourceName}`, 'success');
+
+            showStatus('搜索中...', 'success');
+            ipcRenderer.send('search-books', {
+                source: currentSource,
+                keyword: currentBook.name
+            });
+        }
+
         function minimizeWindow() {
             ipcRenderer.send('minimize-window');
         }
 
-        // 最大化/还原窗口
         function maximizeWindow() {
             ipcRenderer.send('maximize-window');
         }
 
-        // 关闭窗口
         function closeWindow() {
             ipcRenderer.send('close-window');
         }
 
-        // 上翻页
         function scrollUp() {
             const content = document.getElementById('content');
             content.scrollBy({
@@ -556,7 +903,6 @@
             });
         }
 
-        // 下翻页
         function scrollDown() {
             const content = document.getElementById('content');
             content.scrollBy({
@@ -565,32 +911,27 @@
             });
         }
 
-        // 加载示例
         function loadSample() {
             const contentDiv = document.getElementById('content');
             contentDiv.innerHTML = `
-                <div class="chapter-title">${chapters[0].title}</div>
+                <div class="chapter-title">${sampleChapters[0].title}</div>
                 <div class="text-content" id="textContent">
-                    ${chapters[0].content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}
+                    ${sampleChapters[0].content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}
                 </div>
             `;
             applyStyles();
             showStatus('示例已加载', 'success');
 
-            // 自动收起设置
             if (settingsVisible) {
                 toggleSettings();
             }
         }
 
-        // 打开文件
         function openFile() {
             ipcRenderer.send('open-file-dialog');
         }
 
-        // 接收文件内容
         ipcRenderer.on('file-loaded', (event, { content, fileName }) => {
-            // 将文件内容按段落分割
             const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
 
             if (paragraphs.length === 0) {
@@ -598,7 +939,6 @@
                 return;
             }
 
-            // 生成HTML
             const html = paragraphs.map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
 
             const contentDiv = document.getElementById('content');
@@ -609,26 +949,20 @@
                 </div>
             `;
 
-            // 滚动到顶部
             document.getElementById('content').scrollTop = 0;
-
-            // 应用样式
             applyStyles();
 
             showStatus(`已加载: ${fileName}`, 'success');
 
-            // 自动收起设置
             if (settingsVisible) {
                 toggleSettings();
             }
         });
 
-        // 接收文件错误
         ipcRenderer.on('file-error', (event, { error }) => {
             showStatus(`加载失败: ${error}`, 'error');
         });
 
-        // 应用当前样式
         function applyStyles() {
             const textContent = document.getElementById('textContent');
             if (textContent) {
@@ -638,7 +972,6 @@
             }
         }
 
-        // 注册快捷键
         function registerShortcuts() {
             const hideKey = document.getElementById('hideShortcut').value.trim();
             const showKey = document.getElementById('showShortcut').value.trim();
@@ -651,7 +984,6 @@
             ipcRenderer.send('register-shortcut', { hideKey, showKey });
         }
 
-        // 接收快捷键注册结果
         ipcRenderer.on('shortcut-registered', (event, { success, error }) => {
             if (success) {
                 showStatus('快捷键已设置成功！', 'success');
@@ -660,7 +992,6 @@
             }
         });
 
-        // 显示状态消息
         function showStatus(message, type) {
             const status = document.getElementById('statusMessage');
             status.textContent = message;
@@ -672,7 +1003,6 @@
             }, 3000);
         }
 
-        // 辅助函数：Hex 转 RGB
         function hexToRgb(hex) {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? {
@@ -682,7 +1012,6 @@
             } : { r: 30, g: 30, b: 30 };
         }
 
-        // 键盘快捷键监听
         document.addEventListener('keydown', (e) => {
             const content = document.getElementById('content');
             if (!content) return;
@@ -726,14 +1055,447 @@
             }
         });
 
-        // 初始化
         window.onload = function() {
             updateOpacity();
             registerShortcuts();
-
-            // 默认收起设置
             toggleSettings();
         };
     </script>
 </body>
 </html>
+main.js 完整代码：
+const { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, globalShortcut, dialog, net } = require('electron');
+const path = require('path');
+const fs = require('fs');
+
+let mainWindow = null;
+let tray = null;
+let hideShortcut = null;
+let showShortcut = null;
+
+function createTray() {
+  const icon = nativeImage.createEmpty();
+
+  tray = new Tray(icon);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示/隐藏',
+      click: () => {
+        if (mainWindow.isVisible()) {
+          mainWindow.hide();
+        } else {
+          mainWindow.show();
+        }
+      }
+    },
+    {
+      label: '退出',
+      click: () => {
+        app.quit();
+      }
+    }
+  ]);
+
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    if (mainWindow.isVisible()) {
+      mainWindow.hide();
+    } else {
+      mainWindow.show();
+    }
+  });
+}
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 500,
+    height: 600,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: false,
+    resizable: true,
+    skipTaskbar: true,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+
+  mainWindow.loadFile('index.html');
+
+  mainWindow.on('close', (event) => {
+    if (!app.isQuiting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
+  createTray();
+}
+
+ipcMain.on('minimize-window', () => {
+  mainWindow.minimize();
+});
+
+ipcMain.on('maximize-window', () => {
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+  } else {
+    mainWindow.maximize();
+  }
+});
+
+ipcMain.on('close-window', () => {
+  mainWindow.close();
+});
+
+ipcMain.on('hide-window', () => {
+  mainWindow.hide();
+});
+
+ipcMain.on('show-window', () => {
+  mainWindow.show();
+});
+
+ipcMain.on('set-always-on-top', (event, alwaysOnTop) => {
+  mainWindow.setAlwaysOnTop(alwaysOnTop);
+});
+
+ipcMain.on('register-shortcut', (event, { hideKey, showKey }) => {
+  if (hideShortcut) {
+    globalShortcut.unregister(hideShortcut);
+  }
+  if (showShortcut) {
+    globalShortcut.unregister(showShortcut);
+  }
+
+  try {
+    hideShortcut = hideKey;
+    showShortcut = showKey;
+
+    globalShortcut.register(hideKey, () => {
+      mainWindow.hide();
+    });
+
+    globalShortcut.register(showKey, () => {
+      mainWindow.show();
+    });
+
+    event.reply('shortcut-registered', { success: true });
+  } catch (error) {
+    event.reply('shortcut-registered', { success: false, error: error.message });
+  }
+});
+
+ipcMain.on('open-file-dialog', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0];
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      mainWindow.webContents.send('file-loaded', { content, fileName: path.basename(filePath) });
+    } catch (error) {
+      mainWindow.webContents.send('file-error', { error: error.message });
+    }
+  }
+});
+
+ipcMain.on('import-book-source', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Text Files', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  if (!result.canceled && result.filePaths.length > 0) {
+    const filePath = result.filePaths[0];
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const sources = JSON.parse(content);
+      
+      if (!Array.isArray(sources)) {
+        throw new Error('书源格式错误：应为数组格式');
+      }
+
+      mainWindow.webContents.send('book-source-imported', { sources });
+    } catch (error) {
+      mainWindow.webContents.send('book-source-imported', { error: error.message });
+    }
+  }
+});
+
+ipcMain.on('search-books', async (event, { source, keyword }) => {
+  try {
+    const results = await searchBooks(source, keyword);
+    mainWindow.webContents.send('search-results', { results });
+  } catch (error) {
+    mainWindow.webContents.send('search-results', { error: error.message });
+  }
+});
+
+ipcMain.on('get-chapters', async (event, { source, book }) => {
+  try {
+    const chapters = await getChapters(source, book);
+    mainWindow.webContents.send('chapters-loaded', { chapters });
+  } catch (error) {
+    mainWindow.webContents.send('chapters-loaded', { error: error.message });
+  }
+});
+
+ipcMain.on('get-chapter-content', async (event, { source, book, chapter }) => {
+  try {
+    const content = await getChapterContent(source, book, chapter);
+    mainWindow.webContents.send('chapter-content-loaded', { content });
+  } catch (error) {
+    mainWindow.webContents.send('chapter-content-loaded', { error: error.message });
+  }
+});
+
+ipcMain.on('cache-book-to-txt', async (event, { book, chapters }) => {
+  try {
+    const saveResult = await dialog.showSaveDialog(mainWindow, {
+      defaultPath: `${book.name}.txt`,
+      filters: [
+        { name: 'Text Files', extensions: ['txt'] }
+      ]
+    });
+
+    if (saveResult.canceled) {
+      mainWindow.webContents.send('cache-completed', { success: false, error: '用户取消保存' });
+      return;
+    }
+
+    let content = `${book.name}\n\n`;
+    
+    for (const chapter of chapters) {
+      content += `\n${'='.repeat(50)}\n`;
+      content += `${chapter.title}\n`;
+      content += `${'='.repeat(50)}\n\n`;
+      
+      try {
+        const chapterContent = await getChapterContent(null, book, chapter);
+        content += chapterContent + '\n';
+      } catch (error) {
+        content += `[获取失败: ${error.message}]\n`;
+      }
+      
+      mainWindow.webContents.send('cache-completed', { 
+        success: false, 
+        error: `缓存中... ${chapters.indexOf(chapter) + 1}/${chapters.length}` 
+      });
+    }
+
+    fs.writeFileSync(saveResult.filePath, content, 'utf-8');
+    mainWindow.webContents.send('cache-completed', { success: true, filePath: saveResult.filePath });
+  } catch (error) {
+    mainWindow.webContents.send('cache-completed', { success: false, error: error.message });
+  }
+});
+
+app.whenReady().then(() => {
+  createWindow();
+
+  app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('before-quit', () => {
+  app.isQuiting = true;
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
+});
+
+function httpGet(url) {
+  return new Promise((resolve, reject) => {
+    const request = net.request(url);
+    request.on('response', (response) => {
+      let data = '';
+      response.on('data', (chunk) => {
+        data += chunk.toString();
+      });
+      response.on('end', () => {
+        try {
+          resolve(data);
+        } catch (e) {
+          reject(new Error('解析响应失败'));
+        }
+      });
+    });
+    request.on('error', (error) => {
+      reject(error);
+    });
+    request.end();
+  });
+}
+
+function replaceUrlTemplate(template, key, page = 1) {
+  let url = template;
+  url = url.replace(/\{\{key\}\}/g, encodeURIComponent(key));
+  url = url.replace(/\{\{(page-1)\*\d+\}\}/g, (page - 1) * 10);
+  url = url.replace(/\{\{page\}\}/g, page);
+  return url;
+}
+
+function parseJsonPath(obj, path) {
+  const parts = path.split('.');
+  let current = obj;
+  
+  for (const part of parts) {
+    if (part.startsWith('$')) {
+      continue;
+    }
+    
+    if (part.includes('[') && part.includes(']')) {
+      const [base, arrayPart] = part.split('[');
+      const index = parseInt(arrayPart.replace(']', ''));
+      if (Array.isArray(current[base]) && !isNaN(index)) {
+        current = current[base][index];
+      } else if (arrayPart.includes('*')) {
+        current = current[base] || [];
+        break;
+      }
+    } else if (part === '*') {
+      if (Array.isArray(current)) {
+        break;
+      }
+    } else {
+      current = current[part];
+    }
+    
+    if (current === undefined || current === null) {
+      return null;
+    }
+  }
+  
+  return current;
+}
+
+async function searchBooks(source, keyword) {
+  try {
+    const searchUrl = replaceUrlTemplate(source.ruleSearch.searchUrl || source.searchUrl, keyword);
+    const data = await httpGet(searchUrl);
+    const json = JSON.parse(data);
+    
+    const bookListPath = source.ruleSearch.bookList;
+    const results = parseJsonPath(json, bookListPath);
+    
+    if (!Array.isArray(results)) {
+      throw new Error('搜索结果格式错误');
+    }
+    
+    const books = [];
+    for (const item of results) {
+      if (!item) continue;
+      
+      const name = parseJsonPath(item, source.ruleSearch.name) || item.book_name || item.name;
+      const author = parseJsonPath(item, source.ruleSearch.author) || item.author;
+      const intro = parseJsonPath(item, source.ruleSearch.intro) || item.abstract || item.introduction;
+      const kind = parseJsonPath(item, source.ruleSearch.kind) || item.category;
+      const bookId = parseJsonPath(item, '$.book_id') || item.book_id;
+      
+      if (name) {
+        books.push({
+          name,
+          author,
+          intro,
+          kind,
+          bookId,
+          bookUrl: source.ruleSearch.bookUrl ? 
+                   replaceUrlTemplate(source.ruleSearch.bookUrl.replace(/\{\{.*?book_id.*?\}\}/g, bookId), keyword) :
+                   source.bookSourceUrl,
+          sourceUrl: source.bookSourceUrl
+        });
+      }
+    }
+    
+    return books;
+  } catch (error) {
+    throw new Error(`搜索失败: ${error.message}`);
+  }
+}
+
+async function getChapters(source, book) {
+  try {
+    const bookUrl = book.bookUrl || book.book_url;
+    const data = await httpGet(bookUrl);
+    const json = JSON.parse(data);
+    
+    const chapterListPath = source.ruleToc.chapterList;
+    const chapterList = parseJsonPath(json, chapterListPath);
+    
+    if (!Array.isArray(chapterList)) {
+      throw new Error('章节列表格式错误');
+    }
+    
+    const chapters = [];
+    for (const item of chapterList) {
+      if (!item) continue;
+      
+      const title = parseJsonPath(item, source.ruleToc.chapterName) || item.title || item.chapter_name;
+      const itemId = parseJsonPath(item, '$.item_id') || item.item_id;
+      const chapterUrl = source.ruleToc.chapterUrl ?
+                        replaceUrlTemplate(source.ruleToc.chapterUrl.replace(/\{\{.*?item_id.*?\}\}/g, itemId), '') :
+                        parseJsonPath(item, source.ruleToc.chapterName);
+      
+      if (title) {
+        chapters.push({
+          title,
+          url: chapterUrl,
+          itemId
+        });
+      }
+    }
+    
+    return chapters;
+  } catch (error) {
+    throw new Error(`获取章节失败: ${error.message}`);
+  }
+}
+
+async function getChapterContent(source, book, chapter) {
+  try {
+    const chapterUrl = chapter.url;
+    const data = await httpGet(chapterUrl);
+    
+    try {
+      const json = JSON.parse(data);
+      const contentPath = source?.ruleContent?.content || '$.data.content';
+      const content = parseJsonPath(json, contentPath);
+      
+      if (content) {
+        return content;
+      }
+    } catch (e) {
+    }
+    
+    const content = data.replace(/<[^>]+>/g, '\n')
+                         .replace(/\n\s*\n/g, '\n\n')
+                         .trim();
+    
+    return content;
+  } catch (error) {
+    throw new Error(`获取章节内容失败: ${error.message}`);
+  }
+}
