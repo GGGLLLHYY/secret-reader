@@ -1,35 +1,32 @@
-name: Build and Release
+name: Build Electron App
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v3
       with:
-        node-version: '20'
+        node-version: '18'
 
     - name: Install dependencies
-      run: |
-        npm install --no-optional
-        npm install -g electron-builder
+      run: npm install
 
-    - name: Build Windows executable
-      run: electron-builder --win --x64 --publish never
+    - name: Build Electron app
+      run: npm run build
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload Windows artifacts
-      uses: actions/upload-artifact@v4
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
       with:
-        name: secret-reader-windows
+        name: electron-app
         path: dist/*.exe
-        if-no-files-found: error
