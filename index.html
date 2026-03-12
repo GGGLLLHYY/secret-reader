@@ -19,6 +19,7 @@
             overflow: hidden;
             height: 100vh;
             border-radius: 10px;
+            transition: background 0.3s, color 0.3s;
         }
 
         /* 标题栏 */
@@ -31,6 +32,7 @@
             padding: 0 15px;
             border-radius: 10px 10px 0 0;
             -webkit-app-region: drag; /* 允许拖动窗口 */
+            transition: background 0.3s;
         }
 
         .titlebar h1 {
@@ -38,6 +40,7 @@
             font-weight: 500;
             color: #fff;
             -webkit-app-region: no-drag; /* 标题不参与拖动 */
+            transition: color 0.3s;
         }
 
         .window-controls {
@@ -69,11 +72,20 @@
             background: #e74c3c;
         }
 
-        /* 控制面板 */
-        .controls {
+        /* 设置面板 */
+        .settings-panel {
             padding: 15px;
-            background: rgba(40, 40, 40, 0.5);
+            background: rgba(40, 40, 40, 0.95);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+            max-height: 500px;
+            overflow: hidden;
+        }
+
+        .settings-panel.hidden {
+            max-height: 0;
+            padding: 0 15px;
+            border-bottom: none;
         }
 
         .control-group {
@@ -85,8 +97,9 @@
 
         .control-group label {
             font-size: 12px;
-            color: #aaa;
+            color: inherit;
             min-width: 80px;
+            opacity: 0.8;
         }
 
         input[type="range"] {
@@ -95,7 +108,7 @@
             border-radius: 3px;
             background: rgba(255, 255, 255, 0.2);
             outline: none;
-            -webkit-apppearance: none;
+            -webkit-appearance: none;
         }
 
         input[type="range"]::-webkit-slider-thumb {
@@ -139,7 +152,7 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 4px;
             background: rgba(30, 30, 30, 0.8);
-            color: #e0e0e0;
+            color: inherit;
             font-size: 12px;
             width: 150px;
             outline: none;
@@ -149,11 +162,20 @@
             border-color: #4a9eff;
         }
 
+        input[type="color"] {
+            width: 40px;
+            height: 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+
         /* 小说内容区 */
         .content {
             padding: 20px;
             overflow-y: auto;
-            height: calc(100vh - 260px);
+            height: calc(100vh - 300px);
         }
 
         .content::-webkit-scrollbar {
@@ -173,7 +195,6 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #fff;
             text-align: center;
         }
 
@@ -181,7 +202,6 @@
             font-size: 16px;
             line-height: 2;
             text-align: justify;
-            color: #d0d0d0;
         }
 
         .text-content p {
@@ -192,7 +212,7 @@
         /* 底部导航 */
         .nav {
             padding: 15px;
-            background: rgba(40, 40, 40, 0.5);
+            background: rgba(40, 40, 40, 0.95);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -219,29 +239,33 @@
             cursor: not-allowed;
         }
 
-        .chapter-info {
-            font-size: 12px;
-            color: #888;
-        }
-
-        /* 隐藏按钮 */
-        .hide-btn {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(231, 76, 60, 0.2);
-            color: #e74c3c;
-            border: none;
+        /* 设置按钮 */
+        .toggle-settings-btn {
             padding: 8px 15px;
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
-            z-index: 1000;
-            -webkit-app-region: no-drag;
+            font-size: 13px;
+            transition: all 0.2s;
+            flex: 1;
         }
 
-        .hide-btn:hover {
-            background: rgba(231, 76, 60, 0.3);
+        .toggle-settings-btn:hover {
+            background: rgba(74, 158, 255, 0.3);
+        }
+
+        /* 快捷键说明 */
+        .shortcut-info {
+            font-size: 11px;
+            color: inherit;
+            opacity: 0.6;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 10px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-left: 5px;
         }
 
         /* 状态提示 */
@@ -265,22 +289,20 @@
             display: block;
         }
 
-        .shortcut-hint {
-            font-size: 11px;
-            color: #666;
+        /* 欢迎/空状态 */
+        .empty-state {
             text-align: center;
-            margin-top: 10px;
+            padding: 40px 20px;
         }
 
-        /* 快捷键说明 */
-        .shortcut-info {
-            font-size: 11px;
-            color: #888;
-            background: rgba(0, 0, 0, 0.2);
-            padding: 5px 10px;
-            border-radius: 3px;
-            display: inline-block;
-            margin-left: 5px;
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            opacity: 0.7;
+            line-height: 1.8;
         }
     </style>
 </head>
@@ -294,7 +316,7 @@
         </div>
     </div>
 
-    <div class="controls">
+    <div class="settings-panel" id="settingsPanel">
         <div class="control-group">
             <label>窗口透明度</label>
             <input type="range" id="opacity" min="30" max="100" value="85" oninput="changeOpacity(this.value)">
@@ -311,8 +333,16 @@
             <span class="value-display" id="lineHeightValue">20px</span>
         </div>
         <div class="control-group">
+            <label>背景颜色</label>
+            <input type="color" id="bgColor" value="#1e1e1e" onchange="changeBgColor(this.value)">
+        </div>
+        <div class="control-group">
+            <label>文字颜色</label>
+            <input type="color" id="textColor" value="#e0e0e0" onchange="changeTextColor(this.value)">
+        </div>
+        <div class="control-group">
             <label>功能选项</label>
-            <button class="btn active" id="topBtn" onclick="toggleTop()">置顶</button>
+            <button class="btn" id="topBtn" onclick="toggleTop()">置顶</button>
             <button class="btn" onclick="openFile()">📄 打开TXT文件</button>
             <button class="btn" onclick="loadSample()">加载示例</button>
         </div>
@@ -329,43 +359,37 @@
     </div>
 
     <div class="content" id="content">
-        <div class="chapter-title" id="chapterTitle">欢迎使用隐蔽小说阅读器</div>
-        <div class="text-content" id="textContent">
-            <p>这是一个隐蔽的小说阅读器，可以在工作时偷偷看小说。</p>
+        <div class="empty-state">
+            <h2>欢迎使用隐蔽小说阅读器</h2>
+            <p>点击"打开TXT文件"按钮选择小说文件，或点击"加载示例"查看示例内容。</p>
             <p>功能特点：</p>
-            <p>✅ 可调节窗口透明度，让窗口看起来不那么显眼</p>
-            <p>✅ 点击关闭按钮可以隐藏到系统托盘，不会在任务栏显示</p>
-            <p>✅ 窗口可以置顶显示，方便边工作边看</p>
-            <p>✅ 支持打开TXT文件，方便阅读本地小说</p>
-            <p>✅ 支持键盘翻页（↑ ↓ ← → PageUp PageDown）</p>
-            <p>✅ 可调节文字大小和行间距</p>
+            <p>✅ 可调节窗口透明度、背景颜色、文字颜色</p>
+            <p>✅ 点击关闭按钮可以隐藏到系统托盘</p>
+            <p>✅ 不在任务栏显示，仅在托盘显示</p>
+            <p>✅ 支持键盘翻页</p>
             <p>✅ 可自定义快捷键</p>
             <p>使用方法：</p>
-            <p>1. 使用滑动条调节窗口透明度</p>
-            <p>2. 点击"置顶"按钮可以让窗口始终在最上层</p>
-            <p>3. 点击窗口控制栏的"×"按钮可以隐藏到托盘</p>
-            <p>4. 在托盘区域点击图标可以重新显示窗口</p>
-            <p>5. 右键托盘图标可以退出程序</p>
-            <p>6. 点击"打开TXT文件"选择本地小说文件</p>
-            <p>7. 用键盘方向键或PageUp/PageDown翻页</p>
+            <p>1. 点击下方"打开设置"展开设置面板</p>
+            <p>2. 调整透明度、颜色、文字大小等</p>
+            <p>3. 点击"打开TXT文件"选择小说</p>
+            <p>4. 设置会自动收起，开始阅读</p>
         </div>
     </div>
 
     <div class="nav">
         <button class="nav-btn" onclick="scrollUp()">↑ 上翻页</button>
-        <div class="shortcut-info">快捷键：↑ ↓ ← → | PageUp PageDown | Space</div>
+        <button class="toggle-settings-btn" onclick="toggleSettings()">⚙️ 打开设置</button>
         <button class="nav-btn" onclick="scrollDown()">下翻页 ↓</button>
     </div>
-
-    <button class="hide-btn" onclick="hideToTray()">🙈 快速隐藏</button>
 
     <script>
         const { ipcRenderer } = require('electron');
 
         let currentOpacity = 85;
-        let isTop = true;
+        let isTop = false;
         let currentFontSize = 16;
         let currentLineHeight = 20;
+        let settingsVisible = true;
 
         // 示例章节数据
         const chapters = [
@@ -423,21 +447,56 @@
         function changeOpacity(value) {
             currentOpacity = value;
             document.getElementById('opacityValue').textContent = value + '%';
-            document.body.style.background = `rgba(30, 30, 30, ${value / 100})`;
+            updateOpacity();
+        }
+
+        function updateOpacity() {
+            const bgColor = hexToRgb(document.getElementById('bgColor').value);
+            document.body.style.background = `rgba(${bgColor.r}, ${bgColor.g}, ${bgColor.b}, ${currentOpacity / 100})`;
         }
 
         // 切换文字大小
         function changeFontSize(value) {
             currentFontSize = value;
             document.getElementById('fontSizeValue').textContent = value + 'px';
-            document.getElementById('textContent').style.fontSize = value + 'px';
+            const textContent = document.getElementById('textContent');
+            if (textContent) {
+                textContent.style.fontSize = value + 'px';
+            }
         }
 
         // 切换行间距
         function changeLineHeight(value) {
             currentLineHeight = value;
             document.getElementById('lineHeightValue').textContent = value + 'px';
-            document.getElementById('textContent').style.lineHeight = (value / 10);
+            const textContent = document.getElementById('textContent');
+            if (textContent) {
+                textContent.style.lineHeight = (value / 10);
+            }
+        }
+
+        // 切换背景颜色
+        function changeBgColor(value) {
+            updateOpacity();
+        }
+
+        // 切换文字颜色
+        function changeTextColor(value) {
+            document.body.style.color = value;
+            const titlebar = document.querySelector('.titlebar h1');
+            if (titlebar) titlebar.style.color = value;
+
+            const labels = document.querySelectorAll('label');
+            labels.forEach(label => {
+                label.style.color = value;
+                label.style.opacity = '0.8';
+            });
+
+            const shortcutInfo = document.querySelector('.shortcut-info');
+            if (shortcutInfo) shortcutInfo.style.color = value;
+
+            const textContent = document.getElementById('textContent');
+            if (textContent) textContent.style.color = value;
         }
 
         // 切换置顶
@@ -446,12 +505,27 @@
             const btn = document.getElementById('topBtn');
             if (isTop) {
                 btn.classList.add('active');
-                btn.textContent = '置顶';
+                btn.textContent = '取消置顶';
                 ipcRenderer.send('set-always-on-top', true);
             } else {
                 btn.classList.remove('active');
-                btn.textContent = '取消置顶';
+                btn.textContent = '置顶';
                 ipcRenderer.send('set-always-on-top', false);
+            }
+        }
+
+        // 切换设置面板显示/隐藏
+        function toggleSettings() {
+            settingsVisible = !settingsVisible;
+            const panel = document.getElementById('settingsPanel');
+            const btn = document.querySelector('.toggle-settings-btn');
+
+            if (settingsVisible) {
+                panel.classList.remove('hidden');
+                btn.textContent = '⚙️ 关闭设置';
+            } else {
+                panel.classList.add('hidden');
+                btn.textContent = '⚙️ 打开设置';
             }
         }
 
@@ -468,16 +542,6 @@
         // 关闭窗口
         function closeWindow() {
             ipcRenderer.send('close-window');
-        }
-
-        // 隐藏到托盘
-        function hideToTray() {
-            ipcRenderer.send('hide-window');
-        }
-
-        // 显示窗口
-        function showWindow() {
-            ipcRenderer.send('show-window');
         }
 
         // 上翻页
@@ -500,10 +564,20 @@
 
         // 加载示例
         function loadSample() {
-            document.getElementById('chapterTitle').textContent = chapters[0].title;
-            const content = chapters[0].content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('');
-            document.getElementById('textContent').innerHTML = content;
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = `
+                <div class="chapter-title">${chapters[0].title}</div>
+                <div class="text-content" id="textContent">
+                    ${chapters[0].content.split('\n\n').map(p => `<p>${p.trim()}</p>`).join('')}
+                </div>
+            `;
+            applyStyles();
             showStatus('示例已加载', 'success');
+
+            // 自动收起设置
+            if (settingsVisible) {
+                toggleSettings();
+            }
         }
 
         // 打开文件
@@ -516,22 +590,50 @@
             // 将文件内容按段落分割
             const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim());
 
+            if (paragraphs.length === 0) {
+                showStatus('文件内容为空', 'error');
+                return;
+            }
+
             // 生成HTML
             const html = paragraphs.map(p => `<p>${p.trim().replace(/\n/g, '<br>')}</p>`).join('');
 
-            document.getElementById('chapterTitle').textContent = fileName;
-            document.getElementById('textContent').innerHTML = html;
+            const contentDiv = document.getElementById('content');
+            contentDiv.innerHTML = `
+                <div class="chapter-title">${fileName}</div>
+                <div class="text-content" id="textContent">
+                    ${html}
+                </div>
+            `;
 
             // 滚动到顶部
             document.getElementById('content').scrollTop = 0;
 
+            // 应用样式
+            applyStyles();
+
             showStatus(`已加载: ${fileName}`, 'success');
+
+            // 自动收起设置
+            if (settingsVisible) {
+                toggleSettings();
+            }
         });
 
         // 接收文件错误
         ipcRenderer.on('file-error', (event, { error }) => {
             showStatus(`加载失败: ${error}`, 'error');
         });
+
+        // 应用当前样式
+        function applyStyles() {
+            const textContent = document.getElementById('textContent');
+            if (textContent) {
+                textContent.style.fontSize = currentFontSize + 'px';
+                textContent.style.lineHeight = (currentLineHeight / 10);
+                textContent.style.color = document.getElementById('textColor').value;
+            }
+        }
 
         // 注册快捷键
         function registerShortcuts() {
@@ -567,10 +669,21 @@
             }, 3000);
         }
 
+        // 辅助函数：Hex 转 RGB
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : { r: 30, g: 30, b: 30 };
+        }
+
         // 键盘快捷键监听
         document.addEventListener('keydown', (e) => {
-            // 阻止某些默认行为
             const content = document.getElementById('content');
+            if (!content) return;
+
             const isAtTop = content.scrollTop === 0;
             const isAtBottom = content.scrollHeight - content.scrollTop === content.clientHeight;
 
@@ -610,26 +723,13 @@
             }
         });
 
-        // 鼠标滚轮支持（可选）
-        let scrollTimeout;
-        document.getElementById('content').addEventListener('wheel', (e) => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                if (e.deltaY > 0) {
-                    // 向下滚动
-                } else {
-                    // 向上滚动
-                }
-            }, 100);
-        });
-
         // 初始化
         window.onload = function() {
-            // 设置初始透明度
-            document.body.style.background = `rgba(30, 30, 30, ${currentOpacity / 100})`;
-
-            // 注册默认快捷键
+            updateOpacity();
             registerShortcuts();
+
+            // 默认收起设置
+            toggleSettings();
         };
     </script>
 </body>
