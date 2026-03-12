@@ -8,11 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [windows-latest]
+    runs-on: windows-latest
 
     steps:
     - name: Checkout code
@@ -20,22 +16,20 @@ jobs:
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
-      env:
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       with:
-        node-version: '24'
-        cache: 'npm'
+        node-version: '20'
 
     - name: Install dependencies
-      run: npm install
+      run: |
+        npm install --no-optional
+        npm install -g electron-builder
 
     - name: Build Windows executable
-      if: matrix.os == 'windows-latest'
-      run: npm run build
+      run: electron-builder --win --x64
 
     - name: Upload Windows artifacts
-      if: matrix.os == 'windows-latest'
       uses: actions/upload-artifact@v4
       with:
         name: secret-reader-windows
         path: dist/*.exe
+        if-no-files-found: error
