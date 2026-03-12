@@ -696,13 +696,14 @@
             const contentDiv = document.getElementById('content');
             contentDiv.innerHTML = `
                 <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="输入小说名称" 
+                    <input type="text" id="searchInput" placeholder="输入小说名称(支持模糊搜索,如:斗罗)" 
                            onkeypress="if(event.key==='Enter') performSearch()">
-                    <select id="sourceSelect" class="source-select" onchange="selectSource(this.value)">
-                        ${bookSources.map((s, i) => `<option value="${i}">${s.bookSourceName}</option>`).join('')}
-                    </select>
-                    <button class="btn" onclick="performSearch()">搜索</button>
+                    <button class="btn" onclick="performSearch()">🔍 搜索所有源</button>
                 </div>
+                <div id="searchInfo" style="margin: 10px 0; opacity: 0.7; font-size: 12px;">
+                    已导入 ${bookSources.length} 个书源,点击搜索将搜索所有书源
+                </div>
+                <div id="searchErrors" style="margin: 10px 0;"></div>
                 <div id="searchResults" class="search-results"></div>
             `;
 
@@ -714,10 +715,7 @@
             document.getElementById('searchInput').focus();
         }
 
-        // 选择书源
-        function selectSource(index) {
-            currentSource = bookSources[parseInt(index)];
-        }
+
 
         // 执行搜索
         function performSearch() {
@@ -727,30 +725,37 @@
                 return;
             }
 
-            if (!currentSource) {
-                showStatus('请选择书源', 'error');
-                return;
-            }
-
             showStatus('搜索中...', 'success');
-            document.getElementById('searchResults').innerHTML = '<div class="loading">搜索中</div>';
+            document.getElementById('searchResults').innerHTML = '<div class="loading">正在搜索所有书源</div>';
+            document.getElementById('searchErrors').innerHTML = '';
 
             ipcRenderer.send('search-books', {
-                source: currentSource,
                 keyword: keyword
             });
         }
 
         // 接收搜索结果
-        ipcRenderer.on('search-results', (event, { results, error }) => {
-            if (error) {
-                showStatus(`搜索失败: ${error}`, 'error');
-                document.getElementById('searchResults').innerHTML = `<p style="color: #e74c3c;">${error}</p>`;
+        ipcRenderer.on('search-results', (event, { results, errors }) => {
+            // 显示错误信息
+            if (errors && errors.length > 0) {
+                const errorsDiv = document.getElementById('searchErrors');
+                errorsDiv.innerHTML = `
+                    <div style="background: rgba(231, 76, 60, 0.1); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                        <p style="color: #e74c3c; margin: 0; font-size: 12px;">以下书源搜索失败:</p>
+                        ${errors.map(e => `<p style="color: #e74c3c; margin: 5px 0 0 0; font-size: 11px;">• ${e}</p>`).join('')}
+                    </div>
+                `;
+            }
+
+            if (!results || results.length === 0) {
+                document.getElementById('searchResults').innerHTML = '<p style="opacity: 0.7;">未找到相关小说</p>';
+                showStatus('未找到相关小说', 'error');
                 return;
             }
 
             searchResults = results;
             displaySearchResults(results);
+            showStatus(`找到 ${results.length} 本小说`, 'success');
         });
 
         // 显示搜索结果
@@ -759,7 +764,6 @@
 
             if (!results || results.length === 0) {
                 resultsDiv.innerHTML = '<p style="opacity: 0.7;">未找到相关小说</p>';
-                showStatus('未找到相关小说', 'error');
                 return;
             }
 
@@ -768,20 +772,20 @@
                     <h3>${book.name}</h3>
                     <div class="book-info">
                         <p>作者：${book.author || '未知'}</p>
+                        <p>来源：<span style="color: #4a9eff;">${book.sourceName || '未知源'}</span></p>
                         <p>${book.intro || '暂无简介'}</p>
                         ${book.kind ? `<p>标签：${book.kind}</p>` : ''}
                     </div>
                 </div>
             `).join('');
-
-            showStatus(`找到 ${results.length} 本小说`, 'success');
         }
 
         // 选择小说
         function selectBook(index) {
             currentBook = searchResults[index];
-            showStatus('获取章节中...', 'success');
-            
+            currentSource = bookSources[currentBook.sourceIndex];
+            showStatus(`正在从 ${currentSource.bookSourceName} 获取章节...`, 'success');
+
             ipcRenderer.send('get-chapters', {
                 source: currentSource,
                 book: currentBook
@@ -934,24 +938,17 @@
             }
         });
 
-        // 换源
+        // 换源 - 在所有书源中搜索同一本书
         function changeSource() {
             if (!currentBook) {
                 showStatus('请先选择小说', 'error');
                 return;
             }
 
-            // 找到当前书源在列表中的位置
-            const currentIndex = bookSources.indexOf(currentSource);
-            const nextIndex = (currentIndex + 1) % bookSources.length;
-            currentSource = bookSources[nextIndex];
+            showStatus('正在换源搜索...', 'success');
 
-            showStatus(`切换到: ${currentSource.bookSourceName}`, 'success');
-
-            // 重新搜索当前小说
-            showStatus('搜索中...', 'success');
+            // 重新搜索当前书名
             ipcRenderer.send('search-books', {
-                source: currentSource,
                 keyword: currentBook.name
             });
         }

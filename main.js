@@ -6,6 +6,7 @@ let mainWindow = null;
 let tray = null;
 let hideShortcut = null;
 let showShortcut = null;
+let bookSources = [];  // 全局书源列表
 
 // 创建托盘图标（使用内置图标）
 function createTray() {
@@ -155,56 +156,43 @@ ipcMain.on('open-file-dialog', async () => {
 ipcMain.on('import-book-source', async (event) => {
   try {
     console.log('收到导入书源请求');
-    
-    // 临时方案:直接读取桌面上的书源文件
-    const desktopPath = 'C:\\Users\\QYT-099\\Desktop\\阿源书源-小黑网络素材书源.txt';
-    
-    try {
-      const content = fs.readFileSync(desktopPath, 'utf-8');
-      const sources = JSON.parse(content);
-      
-      if (!Array.isArray(sources)) {
-        throw new Error('书源格式错误：应为数组格式');
-      }
 
-      console.log('成功解析书源,数量:', sources.length);
-      mainWindow.webContents.send('book-source-imported', { sources });
-      return;
-    } catch (error) {
-      console.error('直接读取书源失败:', error);
-    }
-    
-    // 如果直接读取失败,尝试打开文件选择对话框
+    // 打开文件选择对话框
     const result = await dialog.showOpenDialog(mainWindow, {
       properties: ['openFile'],
       filters: [
         { name: 'Text Files', extensions: ['txt'] },
+        { name: 'JSON Files', extensions: ['json'] },
         { name: 'All Files', extensions: ['*'] }
       ]
     });
-    
+
     console.log('文件选择结果:', result);
 
-    if (!result.canceled && result.filePaths.length > 0) {
-      const filePath = result.filePaths[0];
-      console.log('选择的文件:', filePath);
-      
-      try {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        const sources = JSON.parse(content);
-        
-        if (!Array.isArray(sources)) {
-          throw new Error('书源格式错误：应为数组格式');
-        }
-
-        console.log('成功解析书源,数量:', sources.length);
-        mainWindow.webContents.send('book-source-imported', { sources });
-      } catch (error) {
-        console.error('解析书源失败:', error);
-        mainWindow.webContents.send('book-source-imported', { error: error.message });
-      }
-    } else {
+    if (result.canceled || result.filePaths.length === 0) {
       console.log('用户取消了文件选择');
+      return;
+    }
+
+    const filePath = result.filePaths[0];
+    console.log('选择的文件:', filePath);
+
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const sources = JSON.parse(content);
+
+      if (!Array.isArray(sources)) {
+        throw new Error('书源格式错误：应为数组格式');
+      }
+
+      // 保存到全局变量
+      bookSources = sources;
+
+      console.log('成功解析书源,数量:', sources.length);
+      mainWindow.webContents.send('book-source-imported', { sources });
+    } catch (error) {
+      console.error('解析书源失败:', error);
+      mainWindow.webContents.send('book-source-imported', { error: error.message });
     }
   } catch (error) {
     console.error('打开文件对话框失败:', error);
@@ -212,12 +200,43 @@ ipcMain.on('import-book-source', async (event) => {
   }
 });
 
-// 搜索小说
-ipcMain.on('search-books', async (event, { source, keyword }) => {
+// 搜索小说 - 搜索所有书源
+ipcMain.on('search-books', async (event, { keyword }) => {
   try {
-    const results = await searchBooks(source, keyword);
-    mainWindow.webContents.send('search-results', { results });
+    console.log('开始搜索所有书源,关键词:', keyword);
+
+    const allResults = [];
+    const errors = [];
+
+    // 搜索每个书源
+    for (let i = 0; i < bookSources.length; i++) {
+      const source = bookSources[i];
+      try {
+        console.log(`正在搜索书源 ${i + 1}/${bookSources.length}: ${source.bookSourceName}`);
+        const results = await searchBooks(source, keyword);
+
+        // 为每个结果添加书源信息
+        const resultsWithSource = results.map(book => ({
+          ...book,
+          sourceName: source.bookSourceName,
+          sourceIndex: i
+        }));
+
+        allResults.push(...resultsWithSource);
+        console.log(`书源 ${source.bookSourceName} 找到 ${results.length} 本`);
+      } catch (error) {
+        console.error(`书源 ${source.bookSourceName} 搜索失败:`, error.message);
+        errors.push(`${source.bookSourceName}: ${error.message}`);
+      }
+    }
+
+    console.log(`搜索完成,共找到 ${allResults.length} 本小说`);
+    mainWindow.webContents.send('search-results', {
+      results: allResults,
+      errors: errors.length > 0 ? errors : null
+    });
   } catch (error) {
+    console.error('搜索失败:', error);
     mainWindow.webContents.send('search-results', { error: error.message });
   }
 });
@@ -387,45 +406,77 @@ function parseJsonPath(obj, path) {
 // 搜索小说
 async function searchBooks(source, keyword) {
   try {
-    const searchUrl = replaceUrlTemplate(source.ruleSearch.searchUrl || source.searchUrl, keyword);
-    const data = await httpGet(searchUrl);
-    const json = JSON.parse(data);
-    
-    const bookListPath = source.ruleSearch.bookList;
-    const results = parseJsonPath(json, bookListPath);
-    
-    if (!Array.isArray(results)) {
-      throw new Error('搜索结果格式错误');
+    console.log('开始搜索,书源:', source.bookSourceName);
+    console.log('搜索关键词:', keyword);
+
+    // 构建搜索URL
+    let searchUrl;
+    if (source.ruleSearch && source.ruleSearch.searchUrl) {
+      searchUrl = replaceUrlTemplate(source.ruleSearch.searchUrl, keyword);
+    } else {
+      throw new Error('书源没有配置搜索URL');
     }
-    
+    console.log('搜索URL:', searchUrl);
+
+    const data = await httpGet(searchUrl);
+    console.log('收到响应数据,长度:', data.length);
+
+    // 检查返回的是HTML还是JSON
+    if (data.trim().startsWith('<')) {
+      throw new Error('书源返回了HTML而不是JSON,书源格式可能不支持');
+    }
+
+    let json;
+    try {
+      json = JSON.parse(data);
+      console.log('解析JSON成功');
+    } catch (error) {
+      throw new Error('无法解析JSON数据,数据格式错误');
+    }
+
+    // 获取书单列表
+    const bookListPath = source.ruleSearch.bookList;
+    console.log('书单路径:', bookListPath);
+
+    const results = parseJsonPath(json, bookListPath);
+    console.log('解析结果类型:', typeof results, '是否为数组:', Array.isArray(results));
+
+    if (!Array.isArray(results)) {
+      throw new Error(`搜索结果格式错误: 期望数组,实际得到 ${typeof results}`);
+    }
+
     const books = [];
     for (const item of results) {
       if (!item) continue;
-      
+
+      // 解析书籍信息
       const name = parseJsonPath(item, source.ruleSearch.name) || item.book_name || item.name;
       const author = parseJsonPath(item, source.ruleSearch.author) || item.author;
       const intro = parseJsonPath(item, source.ruleSearch.intro) || item.abstract || item.introduction;
       const kind = parseJsonPath(item, source.ruleSearch.kind) || item.category;
       const bookId = parseJsonPath(item, '$.book_id') || item.book_id;
-      
-      if (name) {
+
+      // 模糊匹配:书名包含关键词
+      if (name && name.toLowerCase().includes(keyword.toLowerCase())) {
         books.push({
           name,
           author,
           intro,
           kind,
           bookId,
-          bookUrl: source.ruleSearch.bookUrl ? 
+          bookUrl: source.ruleSearch.bookUrl ?
                    replaceUrlTemplate(source.ruleSearch.bookUrl.replace(/\{\{.*?book_id.*?\}\}/g, bookId), keyword) :
                    source.bookSourceUrl,
           sourceUrl: source.bookSourceUrl
         });
       }
     }
-    
+
+    console.log('搜索完成,找到书籍数量:', books.length);
     return books;
   } catch (error) {
-    throw new Error(`搜索失败: ${error.message}`);
+    console.error('搜索失败:', error);
+    throw error;  // 直接抛出错误,让调用方处理
   }
 }
 
