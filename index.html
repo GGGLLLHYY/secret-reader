@@ -11,16 +11,18 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Microsoft YaHei', Arial, sans-serif;
-            background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(10px);
-            color: #e0e0e0;
-            overflow: hidden;
-            height: 100vh;
-            border-radius: 10px;
-            transition: background 0.3s, color 0.3s;
-        }
+      body {
+    font-family: 'Microsoft YaHei', Arial, sans-serif;
+    background: rgba(30, 30, 30, 0.85);
+    backdrop-filter: blur(10px);
+    color: #e0e0e0;
+    overflow: hidden;
+    height: 100vh;
+    border-radius: 10px;
+    transition: background 0.3s, color 0.3s;
+    display: flex;
+    flex-direction: column;
+}
 
         /* 标题栏 */
         .titlebar {
@@ -172,11 +174,12 @@
         }
 
         /* 小说内容区 */
-        .content {
-            padding: 20px;
-            overflow-y: auto;
-            height: calc(100vh - 300px);
-        }
+       .content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
 
         .content::-webkit-scrollbar {
             width: 6px;
